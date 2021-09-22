@@ -138,7 +138,7 @@ fun DisplayValue(sliderValue: Float, buttonValue: String) {
 
 @Composable
 fun ButtonControl(onClick: () -> Unit) {
-	Button(onClick = { onClick }, modifier = Modifier.padding(all = Dp(10f))) {
+	Button(onClick = onClick, modifier = Modifier.padding(all = Dp(10f))) {
 		Text(text = "ProxyButton")
 	}
 }
