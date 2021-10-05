@@ -1,8 +1,5 @@
-/*
- * Author : AdNovum Informatik AG
- */
 
-package hu.xlipton.gcontroller.MediaPipe;
+package hu.xlipton.gcontroller.mediapipe;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,11 +7,11 @@ import android.util.Log;
 import android.view.View;
 import com.google.mediapipe.formats.proto.LandmarkProto;
 import com.google.mediapipe.solutioncore.CameraInput;
-import com.google.mediapipe.solutioncore.SolutionGlSurfaceView;
 import com.google.mediapipe.solutions.hands.HandLandmark;
 import com.google.mediapipe.solutions.hands.Hands;
 import com.google.mediapipe.solutions.hands.HandsOptions;
 import com.google.mediapipe.solutions.hands.HandsResult;
+import hu.xlipton.gcontroller.gestures.GestureExtractor;
 
 public class MediaPipeHands {
 	private static final String TAG = "MediaPipeHands";
@@ -30,7 +27,7 @@ public class MediaPipeHands {
 
 	// Live camera demo UI and camera components.
 	private CameraInput cameraInput;
-	private SolutionGlSurfaceView<HandsResult> glSurfaceView;
+	private CustomGlSurfaceView<HandsResult> glSurfaceView;
 
 	//TODO 20-Sep-2021/kerip: Add IoC
 	public MediaPipeHands(Context context, GestureExtractor gestureExtractor) {
@@ -39,7 +36,7 @@ public class MediaPipeHands {
 	}
 
 	/** The core MediaPipe Hands setup workflow for its streaming mode. */
-	public SolutionGlSurfaceView<HandsResult> setupStreamingModePipeline() {
+	public CustomGlSurfaceView<HandsResult> setupStreamingModePipeline() {
 		// Initializes a new MediaPipe Hands instance in the streaming mode.
 		hands =
 				new Hands(
@@ -57,15 +54,15 @@ public class MediaPipeHands {
 
 		// Initializes a new Gl surface view with a user-defined HandsResultGlRenderer.
 		glSurfaceView =
-				new SolutionGlSurfaceView<>(context, hands.getGlContext(), hands.getGlMajorVersion());
-		glSurfaceView.setSolutionResultRenderer(new HandsResultGlRenderer());
-		glSurfaceView.setRenderInputImage(true);
+				new CustomGlSurfaceView<>(context, hands.getGlContext(), hands.getGlMajorVersion());
+		glSurfaceView.setSolutionResultRenderer(new hu.xlipton.gcontroller.mediapipe.HandsResultGlRenderer());
+		glSurfaceView.setRenderInputImage(false);
 		hands.setResultListener(
 				handsResult -> {
 					//logWristLandmark(handsResult, /*showPixelValues=*/ false);
 					glSurfaceView.setRenderData(handsResult);
 					glSurfaceView.requestRender();
-					gestureExtractor.calculateSliderValue(handsResult);
+					gestureExtractor.theExtractor(handsResult);
 				});
 
 		// The runnable to start camera after the gl surface view is attached.
