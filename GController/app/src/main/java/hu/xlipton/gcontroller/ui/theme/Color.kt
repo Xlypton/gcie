@@ -2,7 +2,7 @@ package hu.xlipton.gcontroller.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple200 = Color(0xFFBB86FC)
-val Purple500 = Color(0xFF6200EE)
-val Purple700 = Color(0xFF3700B3)
-val Teal200 = Color(0xFF03DAC5)
+val PrimaryLight = Color(0xffffbb93)
+val Primary = Color(0xffff6e40)
+val PrimaryDark = Color(0xffc53d13)
+val Secondary = Color(0xff8c9eff)
