@@ -1,4 +1,4 @@
-package hu.xlipton.gcontroller.mediapipe;
+package hu.xlipton.gcontroller.gestures.mediapipe;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -24,7 +24,11 @@ public class CustomGlSurfaceView<T extends ImageSolutionResult> extends GLSurfac
 	}
 
 	public void setRenderData(T solutionResult) {
-		this.renderer.setRenderData(solutionResult);
+		this.renderer.setRenderData(solutionResult, false);
+	}
+
+	public void setRenderData(T solutionResult, boolean produceTextureFrames) {
+		this.renderer.setRenderData(solutionResult, produceTextureFrames);
 	}
 
 	public void setRenderInputImage(boolean renderInputImage) {
@@ -34,7 +38,7 @@ public class CustomGlSurfaceView<T extends ImageSolutionResult> extends GLSurfac
 	public CustomGlSurfaceView(Context context, EGLContext glContext, int glMajorVersion) {
 		super(context);
 		this.setEGLContextClientVersion(glMajorVersion);
-		this.getHolder().addCallback(new CustomGlSurfaceView.DummyHolderCallback());
+		this.getHolder().addCallback(new DummyHolderCallback());
 		this.setEGLContextFactory(new EGLContextFactory() {
 			public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
 				int[] contextAttrs = new int[]{12440, glMajorVersion, 12344};
@@ -47,13 +51,14 @@ public class CustomGlSurfaceView<T extends ImageSolutionResult> extends GLSurfac
 				}
 			}
 		});
+
+		//
 		this.renderer.setTextureTarget(3553);
 		super.setZOrderOnTop(true);
 		super.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 		super.getHolder().setFormat(PixelFormat.RGBA_8888);
 		super.setRenderer(this.renderer);
 		this.setRenderMode(0);
-		//this.setVisibility(View.VISIBLE);
 	}
 
 	private class DummyHolderCallback implements Callback {

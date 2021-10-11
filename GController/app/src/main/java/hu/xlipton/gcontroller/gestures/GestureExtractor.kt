@@ -1,25 +1,17 @@
 package hu.xlipton.gcontroller.gestures
 
 import android.util.Log
-import android.util.Range
 import androidx.lifecycle.MutableLiveData
-import autovalue.shaded.com.`google$`.common.primitives.`$UnsignedBytes`.toInt
 import com.google.mediapipe.formats.proto.LandmarkProto
-import kotlin.math.roundToInt
 import com.google.mediapipe.solutions.hands.HandsResult
 import hu.xlipton.gcontroller.common.Utils
 import java.util.*
 import kotlin.math.abs
-import kotlin.math.sqrt
 
-class GestureExtractor {
-
+class GestureExtractor(private val sliderQueueLength: Int, private val swipeQueueLength: Int, private val selectQueueLength: Int) {
 	private var previousSliderResults: Queue<Int> = LinkedList()
-	private val sliderQueueLength: Int = 40
-	private var previousRotaryKnobResults: Queue<List<LandmarkProto.NormalizedLandmark>> = LinkedList()
-	private val rotaryKnobQueueLength: Int = 5
+	private var previousSwipeResults: Queue<List<LandmarkProto.NormalizedLandmark>> = LinkedList()
 	private var previousSelectResults: Queue<Int> = LinkedList()
-	private val selectQueueLength: Int = 40
 
 	val sliderValue = MutableLiveData(0)
 	val fixedSliderValues = MutableLiveData("")
@@ -143,11 +135,11 @@ class GestureExtractor {
 
 		var isReady = false
 
-		if (previousRotaryKnobResults.count() < rotaryKnobQueueLength) {
-			previousRotaryKnobResults.add(swipeValues)
+		if (previousSwipeResults.count() < swipeQueueLength) {
+			previousSwipeResults.add(swipeValues)
 		} else {
-			previousRotaryKnobResults.add(swipeValues)
-			previousRotaryKnobResults.remove()
+			previousSwipeResults.add(swipeValues)
+			previousSwipeResults.remove()
 
 			isReady = true
 		}
@@ -155,14 +147,14 @@ class GestureExtractor {
 		if (isReady) {
 			let breaker@{
 				swipeValues.forEach outer@{ currentSwipeValue ->
-					previousRotaryKnobResults.peek().forEach { previousSwipeValue ->
+					previousSwipeResults.peek().forEach { previousSwipeValue ->
 						if (currentSwipeValue.y - 0.4f > previousSwipeValue.y && currentSwipeValue.y - 0.6f <
 							previousSwipeValue.y ) {
 							Log.i("swipe", "DOWN")
 							if (activeControl.value != activeControlsRange.last) {
 								activeControl.postValue(activeControl.value?.plus(1))
 							}
-							previousRotaryKnobResults.clear()
+							previousSwipeResults.clear()
 							return@breaker
 
 						} else if (currentSwipeValue.y + 0.4f < previousSwipeValue.y && currentSwipeValue.y + 0.6f >
@@ -171,7 +163,7 @@ class GestureExtractor {
 							if (activeControl.value != activeControlsRange.first) {
 								activeControl.postValue(activeControl.value?.minus(1))
 							}
-							previousRotaryKnobResults.clear()
+							previousSwipeResults.clear()
 							return@breaker
 						}
 						if (activeControl.value == 0) {
@@ -179,14 +171,14 @@ class GestureExtractor {
 								previousSwipeValue.x ) {
 								Log.i("swipe", "RIGHT")
 								switchValue.postValue(true)
-								previousRotaryKnobResults.clear()
+								previousSwipeResults.clear()
 								return@breaker
 
 							} else if (currentSwipeValue.x + 0.3f < previousSwipeValue.x && currentSwipeValue.x + 0.5f >
 								previousSwipeValue.x	) {
 								Log.i("swipe", "LEFT")
 								switchValue.postValue(false)
-								previousRotaryKnobResults.clear()
+								previousSwipeResults.clear()
 								return@breaker
 							}
 						}
