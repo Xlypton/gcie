@@ -1,5 +1,5 @@
 
-package hu.xlipton.gcontroller.mediapipe;
+package hu.xlipton.gcontroller.gestures.mediapipe;
 
 import android.app.Activity;
 import android.content.Context;
@@ -42,7 +42,7 @@ public class MediaPipeHands {
 				new Hands(
 						context,
 						HandsOptions.builder()
-								.setMode(HandsOptions.STREAMING_MODE)
+								.setStaticImageMode(false)
 								.setMaxNumHands(1)
 								.setRunOnGpu(RUN_ON_GPU)
 								.build());
@@ -55,7 +55,7 @@ public class MediaPipeHands {
 		// Initializes a new Gl surface view with a user-defined HandsResultGlRenderer.
 		glSurfaceView =
 				new CustomGlSurfaceView<>(context, hands.getGlContext(), hands.getGlMajorVersion());
-		glSurfaceView.setSolutionResultRenderer(new hu.xlipton.gcontroller.mediapipe.HandsResultGlRenderer());
+		glSurfaceView.setSolutionResultRenderer(new hu.xlipton.gcontroller.gestures.mediapipe.HandsResultGlRenderer());
 		glSurfaceView.setRenderInputImage(false);
 		hands.setResultListener(
 				handsResult -> {
