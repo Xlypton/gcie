@@ -1,4 +1,3 @@
-
 package hu.xlipton.gcontroller.gestures.mediapipe;
 
 import android.app.Activity;
@@ -25,11 +24,10 @@ public class MediaPipeHands {
 	// Run the pipeline and the model inference on GPU or CPU.
 	private static final boolean RUN_ON_GPU = true;
 
-	// Live camera demo UI and camera components.
+	// Live camera demo UI and camera components with the custom GlSurfaceView implementation
 	private CameraInput cameraInput;
 	private CustomGlSurfaceView<HandsResult> glSurfaceView;
 
-	//TODO 20-Sep-2021/kerip: Add IoC
 	public MediaPipeHands(Context context, GestureExtractor gestureExtractor) {
 		this.context = context;
 		this.gestureExtractor = gestureExtractor;
@@ -62,13 +60,13 @@ public class MediaPipeHands {
 					//logWristLandmark(handsResult, /*showPixelValues=*/ false);
 					glSurfaceView.setRenderData(handsResult);
 					glSurfaceView.requestRender();
+
 					gestureExtractor.theExtractor(handsResult);
 				});
 
 		// The runnable to start camera after the gl surface view is attached.
 		// For video input source, videoInput.start() will be called when the video uri is available.
 		glSurfaceView.post(this::startCamera);
-
 
 		// Updates the preview layout.
 		glSurfaceView.setVisibility(View.VISIBLE);
@@ -82,19 +80,6 @@ public class MediaPipeHands {
 				CameraInput.CameraFacing.FRONT,
 				glSurfaceView.getWidth(),
 				glSurfaceView.getHeight());
-	}
-
-	private void stopCurrentPipeline() {
-		if (cameraInput != null) {
-			cameraInput.setNewFrameListener(null);
-			cameraInput.close();
-		}
-		if (glSurfaceView != null) {
-			glSurfaceView.setVisibility(View.GONE);
-		}
-		if (hands != null) {
-			hands.close();
-		}
 	}
 
 	private void logWristLandmark(HandsResult result, boolean showPixelValues) {

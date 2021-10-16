@@ -52,7 +52,7 @@ public class CustomGlSurfaceView<T extends ImageSolutionResult> extends GLSurfac
 			}
 		});
 
-		//
+		// Custom settings set the GlSurfaceView on top of everything with transparent background
 		this.renderer.setTextureTarget(3553);
 		super.setZOrderOnTop(true);
 		super.setEGLConfigChooser(8, 8, 8, 8, 16, 0);

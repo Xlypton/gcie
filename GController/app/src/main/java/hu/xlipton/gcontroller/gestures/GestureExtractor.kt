@@ -1,6 +1,8 @@
 package hu.xlipton.gcontroller.gestures
 
 import android.util.Log
+import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.MutableLiveData
 import com.google.mediapipe.formats.proto.LandmarkProto
 import com.google.mediapipe.solutions.hands.HandsResult
@@ -8,27 +10,30 @@ import hu.xlipton.gcontroller.common.Utils
 import java.util.*
 import kotlin.math.abs
 
+/** Extract gestures from the given hand landmark results **/
 class GestureExtractor(private val sliderQueueLength: Int, private val swipeQueueLength: Int, private val selectQueueLength: Int) {
 	private var previousSliderResults: Queue<Int> = LinkedList()
 	private var previousSwipeResults: Queue<List<LandmarkProto.NormalizedLandmark>> = LinkedList()
 	private var previousSelectResults: Queue<Int> = LinkedList()
 
-	val sliderValue = MutableLiveData(0)
-	val fixedSliderValues = MutableLiveData("")
+	val activeControl: MutableState<Int> = mutableStateOf(0)
+	private val activeControlsRange = 0..3
 
-	val rotaryKnobValue = MutableLiveData(0f)
+	val sliderValue: MutableState<Int> = mutableStateOf(0)
+
+	val fixedSliderValue: MutableState<Int> = mutableStateOf(0)
+
+	val rotaryKnobValue: MutableState<Float> = mutableStateOf(0f)
 	private var previousAngle = 0f
 	private var startingVectorX = 0f
 	private var startingVectorY = 0f
 
-	val activeControl = MutableLiveData(0)
-	private val activeControlsRange = 0..3
+	val switchValue: MutableState<Boolean> = mutableStateOf(false)
 
-	val selectValue = MutableLiveData(mutableListOf(false, false, false, false))
+	val selectValue : MutableState<List<Boolean>> = mutableStateOf(listOf(false, false, false, false))
 
-	val switchValue = MutableLiveData(false)
-
-	fun theExtractor(handsResult: HandsResult,){
+	// Calls that one control function which is selected to be the active control
+	fun theExtractor(handsResult: HandsResult){
 		val numHands = handsResult.multiHandLandmarks().size
 
 		for (i in 0 until numHands) {
@@ -39,6 +44,7 @@ class GestureExtractor(private val sliderQueueLength: Int, private val swipeQueu
 				3 -> calculateSelect(handLandmarkList = handLandmarkList)
 			}
 
+			// Swipe values are always calculated because they are needed to switch active control
 			calculateSwipe(handLandmarkList = handLandmarkList)
 		}
 	}
@@ -51,8 +57,8 @@ class GestureExtractor(private val sliderQueueLength: Int, private val swipeQueu
 		val distance = Utils.convertHandsFloatToUsableInt(Utils.calculateDistanceFromCoordinates(thumbTipX, thumbTipY,
 			indexFingerTipX, indexFingerTipY))
 
+		// Queuing the previous results so we can compare them
 		var isReady = false
-
 		if (previousSliderResults.count() <  sliderQueueLength) {
 			previousSliderResults.add(distance)
 		} else {
@@ -62,7 +68,7 @@ class GestureExtractor(private val sliderQueueLength: Int, private val swipeQueu
 			isReady = true
 		}
 
-
+		// If the queue is ready we iterate through it and check the distance of the two finger
 		if (isReady) {
 			val currentDistance: Int = previousSliderResults.peek()
 			var isSliderValueSet = true
@@ -75,14 +81,12 @@ class GestureExtractor(private val sliderQueueLength: Int, private val swipeQueu
 			}
 
 			if (isSliderValueSet) {
-				fixedSliderValues.postValue("$currentDistance")
+				fixedSliderValue.value = currentDistance
 				previousSliderResults.clear()
 				Log.i(TAG, "sliderValueSet= $currentDistance")
 			}
-			//Log.i(TAG, "sliderValueNOTset= " + currentDistance)
 		}
-		//Log.i(TAG, "distance= " + distance);
-		sliderValue.postValue(distance)
+		sliderValue.value = distance
 	}
 
 	private fun calculateRotaryKnobValue(handLandmarkList: MutableList<LandmarkProto.NormalizedLandmark>) {
@@ -112,14 +116,14 @@ class GestureExtractor(private val sliderQueueLength: Int, private val swipeQueu
 			val derivedVectorY = abs(vectorY - centerY)
 
 			if(startingVectorX == 0f && startingVectorY == 0f) {
-				previousAngle = rotaryKnobValue.value!!
+				previousAngle = rotaryKnobValue.value
 
 				startingVectorX = derivedVectorX
 				startingVectorY = derivedVectorY
 			}
 
 			val angle = Utils.calculateVectorsAngle(startingVectorX, startingVectorY, derivedVectorX, derivedVectorY) + previousAngle
-			rotaryKnobValue.postValue(angle)
+			rotaryKnobValue.value = angle
 			Log.i(TAG, "StartingVector: ($startingVectorX, $$startingVectorY) | derivedVector: ($derivedVectorX, " +
 					"$derivedVectorY) | Rotation " +
 					"angle: $angle")
@@ -133,8 +137,8 @@ class GestureExtractor(private val sliderQueueLength: Int, private val swipeQueu
 
 		val swipeValues: List<LandmarkProto.NormalizedLandmark> = listOf(indexFinger, middleFinger, ringFinger)
 
+		// Queuing the previous results so we can compare them
 		var isReady = false
-
 		if (previousSwipeResults.count() < swipeQueueLength) {
 			previousSwipeResults.add(swipeValues)
 		} else {
@@ -144,6 +148,7 @@ class GestureExtractor(private val sliderQueueLength: Int, private val swipeQueu
 			isReady = true
 		}
 
+		// If the queue is ready we iterate through it and check the direction and the distance of the hand movement
 		if (isReady) {
 			let breaker@{
 				swipeValues.forEach outer@{ currentSwipeValue ->
@@ -152,7 +157,7 @@ class GestureExtractor(private val sliderQueueLength: Int, private val swipeQueu
 							previousSwipeValue.y ) {
 							Log.i("swipe", "DOWN")
 							if (activeControl.value != activeControlsRange.last) {
-								activeControl.postValue(activeControl.value?.plus(1))
+								activeControl.value++
 							}
 							previousSwipeResults.clear()
 							return@breaker
@@ -161,7 +166,7 @@ class GestureExtractor(private val sliderQueueLength: Int, private val swipeQueu
 							previousSwipeValue.y	) {
 							Log.i("swipe", "UP")
 							if (activeControl.value != activeControlsRange.first) {
-								activeControl.postValue(activeControl.value?.minus(1))
+								activeControl.value--
 							}
 							previousSwipeResults.clear()
 							return@breaker
@@ -170,14 +175,14 @@ class GestureExtractor(private val sliderQueueLength: Int, private val swipeQueu
 							if(currentSwipeValue.x - 0.3f > previousSwipeValue.x && currentSwipeValue.x - 0.5f <
 								previousSwipeValue.x ) {
 								Log.i("swipe", "RIGHT")
-								switchValue.postValue(true)
+								switchValue.value = true
 								previousSwipeResults.clear()
 								return@breaker
 
 							} else if (currentSwipeValue.x + 0.3f < previousSwipeValue.x && currentSwipeValue.x + 0.5f >
 								previousSwipeValue.x	) {
 								Log.i("swipe", "LEFT")
-								switchValue.postValue(false)
+								switchValue.value = false
 								previousSwipeResults.clear()
 								return@breaker
 							}
@@ -194,49 +199,50 @@ class GestureExtractor(private val sliderQueueLength: Int, private val swipeQueu
 
 		var currentSelectValue = 0
 
-		if (indexFingerTipX < 0.5f && indexFingerTipY > 0.5f) {
-			currentSelectValue = 1
-		} else if (indexFingerTipX > 0.5f && indexFingerTipY > 0.5f) {
-			currentSelectValue = 2
-		} else if (indexFingerTipX < 0.5f && indexFingerTipY < 0.5f) {
-			currentSelectValue = 3
-		} else if (indexFingerTipX > 0.5f && indexFingerTipY < 0.5f) {
-			currentSelectValue = 4
-		}
-
-		var isReady = false
-
-		if (previousSliderResults.count() <  selectQueueLength) {
-			previousSliderResults.add(currentSelectValue)
-		} else {
-			previousSliderResults.add(currentSelectValue)
-			previousSliderResults.remove()
-
-			isReady = true
-		}
-
-		var isSelected = true
-
-		if (isReady) {
-			previousSelectResults.forEach {
-				if (it != currentSelectValue) {
-					isSelected = false
-					return@forEach
-				}
+		// Check if the index finger is on the right part of the screen
+		if (indexFingerTipY > 0.6f && indexFingerTipY < 0.8f) {
+			if (indexFingerTipX < 0.5f && indexFingerTipY > 0.7f) {
+				currentSelectValue = 3
+			} else if (indexFingerTipX > 0.5f && indexFingerTipY > 0.7f) {
+				currentSelectValue = 4
+			} else if (indexFingerTipX < 0.5f && indexFingerTipY < 0.7f) {
+				currentSelectValue = 1
+			} else if (indexFingerTipX > 0.5f && indexFingerTipY < 0.7f) {
+				currentSelectValue = 2
 			}
 
-			if (isSelected) {
-				when(currentSelectValue) {
+			// Queuing the previous results so we can compare them
+			var isReady = false
+			if (previousSelectResults.count() < selectQueueLength) {
+				previousSelectResults.add(currentSelectValue)
+			} else {
+				previousSelectResults.add(currentSelectValue)
+				previousSelectResults.remove()
 
+				isReady = true
+			}
 
+			var isSelected = true
+
+			if (isReady) {
+				previousSelectResults.forEach {
+					if (it != currentSelectValue) {
+						isSelected = false
+						return@forEach
+					}
 				}
-				//selectValue.postValue(currentSelectValue)
-				previousSelectResults.clear()
-				selectValue.value?.set(0, true)
-				Log.i("select", "sliderValueSet= $currentSelectValue")
+
+				// If the filed is selected we update the corresponding list item (List<> needs to be used instead of
+				// MutableList<> because the limitation of compose)
+				if (isSelected) {
+					selectValue.value = selectValue.value.toMutableList().also {
+						it[currentSelectValue - 1] = !it[currentSelectValue - 1]
+					}
+					previousSelectResults.clear()
+					Log.i("select", "currentSelectValue= $currentSelectValue")
+				}
 			}
 		}
-
 	}
 
 	companion object {
