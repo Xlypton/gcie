@@ -3,6 +3,7 @@ package hu.xlipton.gcontroller.ui.controls
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -15,44 +16,47 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotateRad
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import hu.xlipton.gcontroller.ui.controller.activeControlColor
+import hu.xlipton.gcontroller.ui.theme.GControllerTheme
 import kotlin.math.PI
 
 @Composable
 fun RotaryKnobControl(radians: Float = 0f, color: Color) {
 	Surface(color = color, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
-		Column(horizontalAlignment = Alignment.CenterHorizontally) {
-			Row(verticalAlignment = Alignment.CenterVertically) {
-				Canvas(modifier = Modifier.size(150.dp)) {
-					val canvasWidth = size.width
-					val canvasHeight = size.height
-					rotateRad(radians = radians) {
-						drawCircle(
-							color = Color(0xffff6e40),
-							center = Offset(x = canvasWidth / 2, y = canvasHeight / 2),
-							radius = size.minDimension / 2.5f
-						)
-						translate() {  }
-						drawRoundRect(
-							color = Color.DarkGray,
-							cornerRadius = CornerRadius(2f,2f),
-							topLeft = Offset(x = canvasWidth / 2F, y = canvasHeight / 6.5F),
-							size = Size(canvasWidth / 50f, canvasHeight / 10f)
-						)
-					}
+		Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround, verticalAlignment = Alignment.CenterVertically) {
+			Canvas(modifier = Modifier.size(140.dp)) {
+				val canvasWidth = size.width
+				val canvasHeight = size.height
+				rotateRad(radians = radians) {
+					drawCircle(
+						color = Color(0xffff6e40),
+						center = Offset(x = canvasWidth / 2, y = canvasHeight / 2),
+						radius = size.minDimension / 2.6f
+					)
+					translate() {  }
+					drawRoundRect(
+						color = Color.DarkGray,
+						cornerRadius = CornerRadius(2f,2f),
+						topLeft = Offset(x = canvasWidth / 2F, y = canvasHeight / 6F),
+						size = Size(canvasWidth / 50f, canvasHeight / 10f)
+					)
 				}
-
-				Text(text = (radians * 180 / PI).toInt().toString(),
-					Modifier
-						.then(Modifier.padding(end = 20.dp, start = 10.dp))
-						.then
-							(
-							Modifier
-								.scale(1.5f)
-						))
 			}
+
+			Text(text = (radians * 180 / PI).toInt().toString(),
+				Modifier.scale(1.5f).padding(end = 30.dp).width(40.dp))
 		}
+	}
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RotaryKnobPreview() {
+	GControllerTheme {
+		RotaryKnobControl(color = MaterialTheme.colors.activeControlColor)
 	}
 }
 

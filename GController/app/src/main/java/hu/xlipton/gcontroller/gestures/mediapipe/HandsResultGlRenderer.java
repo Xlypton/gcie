@@ -73,6 +73,7 @@ public class HandsResultGlRenderer implements ResultGlRenderer<HandsResult> {
     }
     GLES20.glUseProgram(program);
     GLES20.glUniformMatrix4fv(projectionMatrixHandle, 1, false, projectionMatrix, 0);
+    // Set the background transparent
     GLES20.glClearColor(0,0,0,0);
     GLES20.glLineWidth(CONNECTION_THICKNESS);
 

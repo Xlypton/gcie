@@ -1,10 +1,7 @@
-/*
- * Author : AdNovum Informatik AG
- */
-
 package hu.xlipton.gcontroller.ui.controls
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
@@ -18,7 +15,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SwitchControl(onCheckedChange: () -> Unit, checked: Boolean, color: Color) {
-	Surface(color = color, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+	Surface(color = color, modifier = Modifier.fillMaxWidth().height(140.dp), shape = RoundedCornerShape(16.dp)) {
 		Switch(
 			checked = checked,
 			onCheckedChange = { onCheckedChange },
