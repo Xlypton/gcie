@@ -1,0 +1,80 @@
+openapi: '3.0.2'
+info:
+  title: control
+  version: '1.0'
+servers:
+  - url: http://localhost:8080
+paths:
+  /control:
+    get:
+      responses:
+        200:
+          description: The current state of the stored values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ControlData'
+        400:
+          description: Invalid imput.
+        500:
+          description: Internal server error.
+
+    post:
+      description: This operation allows for sending control data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ControlData'
+      responses:
+        204:
+          description: The sent control was succesfuly processed.
+        400:
+          description: Invalid imput.
+        500:
+          description: Internal server error.
+components:
+  schemas:
+    ControlData:
+      title: ControlData
+      type: object
+      description: The control data containing the necessary control informations and data
+      properties:
+        timeStamp:
+          type: string
+          format: date-time
+          description: The time the control was sent in UTC (zulu) time
+          example: '2021-10-20T19:32:28.345Z'
+        switch:
+          type: boolean
+          description: Shows if the switch control is turned on or off.
+        slider:
+          type: number
+          description: The number set by the slider control.
+          example: 24
+        rotaryKnob:
+          type: number
+          description: The number set by the rotary knob control.
+          example: 60
+        select:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items: 
+            type: boolean
+            description: An array where the selected items are ture and the non selected ones are false.
+    ErrorMessage:
+      type: object
+      required:
+        - error_code
+        - error_message
+      properties:
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+
+
+
+

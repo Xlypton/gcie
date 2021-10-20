@@ -1,0 +1,22 @@
+{
+  "name": "gcie",
+  "version": "1.0.0",
+  "description": "Npm depedncies for the gcie project.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xlypton/gcie.git"
+  },
+  "author": "Xlypton",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Xlypton/gcie/issues"
+  },
+  "homepage": "https://github.com/Xlypton/gcie#readme",
+  "dependencies": {
+    "@openapitools/openapi-generator-cli": "^2.4.12"
+  }
+}
