@@ -64,16 +64,6 @@ components:
           items: 
             type: boolean
             description: An array where the selected items are ture and the non selected ones are false.
-    ErrorMessage:
-      type: object
-      required:
-        - error_code
-        - error_message
-      properties:
-        errorCode:
-          type: string
-        errorMessage:
-          type: string
 
 
 
