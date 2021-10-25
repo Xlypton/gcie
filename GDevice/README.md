@@ -15,6 +15,9 @@ A set of open-source tools built around the OAS that help support development, i
 ### Connexion
 Is a Python library that "automagically" handles HTTP requests based on your OAS. It acts as a simple wrapper around Flask reducing the boilerplate code you have to write as well.
 
+### FastAPI
+FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.6+ based on standard Python type hints.
+
 ## Developmet
 ### Installation
 The project uses virtual **environment** to activate it use:  
