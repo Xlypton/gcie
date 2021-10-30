@@ -12,24 +12,20 @@ A set of open-source tools built around the OAS that help support development, i
 - Swagger UI: Renders OAS as interactive API documentation (also can be seen within Swagger Editor).
 - Swagger Codegen - generates server stubs and client libraries from an OpenAPI spec.
 
-### Connexion
-Is a Python library that "automagically" handles HTTP requests based on your OAS. It acts as a simple wrapper around Flask reducing the boilerplate code you have to write as well.
-
 ### FastAPI
-FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.6+ based on standard Python type hints.
+FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.6+ based on standard Python type hints. This project runs the FastAPI application in a remote server machine using **Uvicorn**
 
-## Developmet
-### Installation
-The project uses virtual **environment** to activate it use:  
-(on mac)
-```
-source venv/bin/activate
-```
-(on windows)
-```
-venv/bin/activate
-```
+### Uvicorn
+Uvicorn is a lightning-fast ASGI server implementation, using uvloop and httptools.
+
+## Installation
 Loading project dependencies:
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
+## Run the App
+```
+cd ui/
+python main.py
+```
+
