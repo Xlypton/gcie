@@ -12,7 +12,7 @@
 
 from fastapi import FastAPI
 
-from openapi_server.apis.default_api import router as DefaultApiRouter
+from GDevice.gserver.openapi_server.apis.default_api import router as DefaultApiRouter
 
 app = FastAPI(
     title="control",

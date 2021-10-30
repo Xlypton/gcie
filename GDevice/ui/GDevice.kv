@@ -17,10 +17,12 @@ MainScreen:
             text: "GDevice"
             color: 30/255, 43/255, 51/255, 1
     Button:
-        text: "Start Server"
+        background_normal: ''
+        background_color: (255, 86/255, 43/255,1) if self.state == root.is_server_up else (0, 230/255, 160/255,1)
+        text: root.server_button
         on_press: root.on_server_button_click()  
     Label:
-        text: root.switch_value
+        text: "Switch: " + root.switch_value
         color: 1, 110/255, 64/255, 1
         background_color: 30/255, 43/255, 51/255, 1
         canvas.before:
@@ -30,7 +32,7 @@ MainScreen:
                 size: self.size
                 pos: self.pos
     Label:
-        text: "Label1"
+        text: "Slider values: " + root.slider_value
         color: 1, 110/255, 64/255, 1
         background_color: 30/255, 43/255, 51/255, 1
         canvas.before:
@@ -40,7 +42,7 @@ MainScreen:
                 size: self.size
                 pos: self.pos
     Label:
-        text: "Label1"
+        text: "Rotaryknob: " + root.rotary_knob_value
         color: 1, 110/255, 64/255, 1
         background_color: 30/255, 43/255, 51/255, 1
         canvas.before:
@@ -50,7 +52,7 @@ MainScreen:
                 size: self.size
                 pos: self.pos            
     Label:
-        text: "Label1"
+        text: "Select values: " + root.select_value
         color: 1, 110/255, 64/255, 1
         background_color: 30/255, 43/255, 51/255, 1
         canvas.before:

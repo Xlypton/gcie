@@ -16,8 +16,8 @@ from fastapi import (  # noqa: F401
     status,
 )
 
-from openapi_server.models.extra_models import TokenModel  # noqa: F401
-from openapi_server.models.control_data import ControlData
+from GDevice.gserver.openapi_server.models.extra_models import TokenModel  # noqa: F401
+from GDevice.gserver.openapi_server.models.control_data import ControlData
 
 
 router = APIRouter()
