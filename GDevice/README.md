@@ -23,6 +23,12 @@ Loading project dependencies:
 ```
 pip3 install -r requirements.txt
 ```
+
+## API generation
+```
+java -jar openapi-generator-cli.jar generate -g python-fastapi -i ../Api/openapi:control.yml -o gserver/
+```
+
 ## Run the App
 ```
 cd ui/
