@@ -15,7 +15,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ControlData'
         400:
-          description: Invalid imput.
+          description: Invalid input.
         500:
           description: Internal server error.
 
