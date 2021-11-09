@@ -1,0 +1,82 @@
+openapi: 3.0.2
+info:
+  title: control
+  version: "1.0"
+servers:
+- url: http://localhost:8080
+paths:
+  /control:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ControlData'
+          description: The current state of the stored values.
+        "400":
+          description: Invalid imput.
+        "500":
+          description: Internal server error.
+    post:
+      description: This operation allows for sending control data.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ControlData'
+        required: true
+      responses:
+        "204":
+          description: The sent control was succesfuly processed.
+        "400":
+          description: Invalid imput.
+        "500":
+          description: Internal server error.
+components:
+  schemas:
+    ControlData:
+      description: The control data containing the necessary control informations
+        and data
+      example:
+        timeStamp: 2021-10-20T19:32:28.345Z
+        slider: 24
+        select:
+        - true
+        - true
+        - true
+        - true
+        rotaryKnob: 60
+        switch: true
+      properties:
+        timeStamp:
+          description: The time the control was sent in UTC (zulu) time
+          example: 2021-10-20T19:32:28.345Z
+          format: date-time
+          title: timeStamp
+          type: string
+        switch:
+          description: Shows if the switch control is turned on or off.
+          title: switch
+          type: boolean
+        slider:
+          description: The number set by the slider control.
+          example: 24
+          title: slider
+          type: number
+        rotaryKnob:
+          description: The number set by the rotary knob control.
+          example: 60
+          title: rotaryKnob
+          type: number
+        select:
+          items:
+            description: An array where the selected items are ture and the non selected
+              ones are false.
+            type: boolean
+          maxItems: 4
+          minItems: 4
+          title: select
+          type: array
+      title: ControlData
+      type: object

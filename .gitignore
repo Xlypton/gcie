@@ -7,3 +7,7 @@
 .cxx
 local.properties
 .idea
+node_modules
+
+# Python
+/GDevice/venv

@@ -1,0 +1,82 @@
+#:kivy 1.0
+MainScreen:
+
+#:set background (30/255, 43/255, 51/255, 1)
+#:set accent (1, 110/255, 64/255, 1)
+
+<MainScreen>: 
+    orientation: "vertical"
+    spacing: 40
+    Label:
+        #size_hint: 100, 100
+        pos_hint: {"center_x": .1}
+        text: "GDevice"
+        color: 30/255, 43/255, 51/255, 1
+        size_hint: 1, 0.4
+        canvas.before:
+            Color:
+                rgba: 1, 110/255, 64/255, 1
+            Rectangle:
+                size: self.size
+    
+    RoundedToggleButton:
+        text: root.server_button
+        font_size: '24dp'
+        on_state: root.on_server_button_click()
+        size_hint: .4, .6
+        pos_hint: {"center_x": .5}
+    Label:
+        text: "Switch:  " + root.switch_value
+        font_size: '20dp'
+        color: 1, 110/255, 64/255, 1
+        background_color: 30/255, 43/255, 51/255, 1
+        canvas.before:
+            Color:
+                rgba: self.background_color
+            Rectangle:
+                size: self.size
+                pos: self.pos
+    Label:
+        text: "Slider:  " + root.slider_value
+        font_size: '20dp'
+        color: 1, 110/255, 64/255, 1
+        background_color: 30/255, 43/255, 51/255, 1
+        canvas.before:
+            Color:
+                rgba: self.background_color
+            Rectangle:
+                size: self.size
+                pos: self.pos
+    Label:
+        text: "Rotaryknob:  " + root.rotary_knob_value
+        font_size: '20dp'
+        color: 1, 110/255, 64/255, 1
+        background_color: 30/255, 43/255, 51/255, 1
+        canvas.before:
+            Color:
+                rgba: self.background_color
+            Rectangle:
+                size: self.size
+                pos: self.pos            
+    Label:
+        text: "Select:  " + root.select_value
+        font_size: '20dp'
+        color: 1, 110/255, 64/255, 1
+        background_color: 30/255, 43/255, 51/255, 1
+        canvas.before:
+            Color:
+                rgba: self.background_color
+            Rectangle:
+                size: self.size
+                pos: self.pos
+
+<RoundedToggleButton@ToggleButton>
+    background_color: (0,0,0,0)
+    background_normal: ''
+    canvas.before:
+        Color:
+            rgba: (0, 224/255, 165/255,1) if self.state == 'normal' else (255, 26/255, 0,1) 
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+            radius: [58]
