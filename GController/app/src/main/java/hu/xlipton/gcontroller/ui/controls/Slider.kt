@@ -16,12 +16,12 @@ import hu.xlipton.gcontroller.ui.controller.activeControlColor
 import hu.xlipton.gcontroller.ui.theme.GControllerTheme
 
 @Composable
-fun SliderControl(value: Float, onValueChange: (Float) -> Unit, fixedSliderValues: Int, color: Color) {
+fun SliderControl(value: Float, onValueChange: (Float) -> Unit, fixedSliderValues: Int, color: Color, isControlEnabled: Boolean) {
 	Surface(color = color, shape = RoundedCornerShape(16.dp), modifier = Modifier.height(140.dp)) {
 		Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceAround, modifier =
 		Modifier.fillMaxHeight()) {
 			Text(value.toString(), Modifier.absoluteOffset(y = 10.dp))
-			Slider(value, onValueChange, valueRange = 5f..40f)
+			Slider(value, onValueChange, enabled = isControlEnabled, valueRange = 5f..30f)
 			Text(text = "Slider value is set to: $fixedSliderValues", Modifier.then(
 				Modifier.padding(bottom = 10.dp).absoluteOffset(y = (-6).dp)))
 		}
@@ -30,8 +30,9 @@ fun SliderControl(value: Float, onValueChange: (Float) -> Unit, fixedSliderValue
 
 @Preview(showBackground = true)
 @Composable
-fun SliderKnobPreview() {
+fun SliderPreview() {
 	GControllerTheme {
-		SliderControl(value = 10f, onValueChange = {}, fixedSliderValues = 23, color = MaterialTheme.colors.activeControlColor)
+		SliderControl(value = 10f, onValueChange = {}, fixedSliderValues = 23, color = MaterialTheme.colors.activeControlColor,
+			true)
 	}
 }

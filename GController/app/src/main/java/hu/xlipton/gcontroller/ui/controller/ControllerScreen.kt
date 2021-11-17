@@ -14,6 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import hu.xlipton.gcontroller.gestures.GestureExtractor
 import hu.xlipton.gcontroller.gestures.mediapipe.MediaPipeHands
 import hu.xlipton.gcontroller.ui.controls.*
 import hu.xlipton.gcontroller.ui.theme.GControllerTheme
@@ -21,7 +24,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @Composable
-fun ControllerScreenContent(controllerViewModel: ControllerViewModel) {
+fun ControllerScreen(controllerViewModel: ControllerViewModel = viewModel(), navController: NavController) {
 	val colorConnectButton = if (controllerViewModel.activeControl.value == 0) MaterialTheme.colors.activeControlColor else
 		MaterialTheme
 		.colors
@@ -45,45 +48,26 @@ fun ControllerScreenContent(controllerViewModel: ControllerViewModel) {
 		.colors
 		.launch
 
-	val connectButtonText = if (controllerViewModel.isServerStarted.value) "Disconnect server" else "Connect to server"
+	val connectButtonText = if (controllerViewModel.isServerStarted.value) "Disconnect" else "Connect server"
 
 	Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
 		ConnectButton({}, colorConnectButton, connectButtonBackground, connectButtonText)
 
-		SwitchControl(onCheckedChange = { controllerViewModel.onSwitchChange() }, checked = controllerViewModel.switchState.value,
-			color = colorSwitch)
+		SwitchControl(onCheckedChange = {}, checked = controllerViewModel.switchValue.value,
+			color = colorSwitch, controllerViewModel.isSwitchEnabled)
 
-		SliderControl(controllerViewModel.sliderValue.value.toFloat(), onValueChange = { controllerViewModel
-			.onSliderValueChange(it.roundToInt()) },
-			fixedSliderValues = controllerViewModel.fixedSliderValue.value, color = colorSlider)
+		SliderControl(controllerViewModel.sliderValue.value.toFloat(), onValueChange = {},
+			fixedSliderValues = controllerViewModel.fixedSliderValue.value, color = colorSlider, controllerViewModel.isSliderEnabled)
 
 		RotaryKnobControl(radians = controllerViewModel.rotaryKnobValue.value, color = colorRotaryKnob)
 
 		SelectControl(checked = controllerViewModel.selectValue.value, color = colorSelect)
+		
+		Text(text = "User: " + controllerViewModel.user.firstName + " " + controllerViewModel.user.lastName)
+		Text(text = "Roles: " + controllerViewModel.user.roles.joinToString(), modifier = Modifier.padding(horizontal = 24.dp))
 	}
 
 	HandsCameraView(controllerViewModel = controllerViewModel)
-
-	/*
-	val scaffoldState = rememberScaffoldState()
-
-	Scaffold(scaffoldState = scaffoldState) {
-		if (controllerViewModel.error.value.isNotEmpty()) {
-			LaunchedEffect(controllerViewModel.error.value.isNotEmpty()) {
-				try {
-					when (scaffoldState.snackbarHostState.showSnackbar(
-						controllerViewModel.error.value,
-					)) {
-						SnackbarResult.Dismissed -> {
-						}
-					}
-				} finally {
-					//onDismissSnackBarState()
-				}
-			}
-		}
-	}
-	 */
 }
 
 val Colors.activeControlColor: Color
