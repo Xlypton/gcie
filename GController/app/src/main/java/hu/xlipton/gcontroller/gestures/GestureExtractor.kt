@@ -1,13 +1,13 @@
 package hu.xlipton.gcontroller.gestures
 
-import android.gesture.GestureStore
 import android.util.Log
 import androidx.compose.runtime.*
 import com.google.mediapipe.formats.proto.LandmarkProto
 import com.google.mediapipe.solutions.hands.HandsResult
-import hu.xlipton.control.api.DefaultApi
+import hu.xlipton.control.api.ControlApi
 import hu.xlipton.control.model.ControlData
 import hu.xlipton.gcontroller.common.Utils
+import hu.xlipton.gcontroller.security.LoginService
 import kotlinx.coroutines.*
 import java.lang.Exception
 import java.math.MathContext
@@ -16,11 +16,11 @@ import kotlin.math.PI
 import kotlin.math.abs
 
 object GestureExtractorConstants {
-	const val serverIp = "http://192.168.10.107:8000"
+	const val serverIp = "http://gdevice:8000"
 	const val serverRequestDelay = 1000L
 
 	const val sliderQueueLength = 40
-	const val sliderResult = 1
+	const val sliderResult = 0
 
 	const val swipeQueueLength = 4
 	const val verticalSwipeLowerBound = 0.5f
@@ -39,8 +39,8 @@ object GestureExtractorConstants {
 }
 
 /** Extract gestures from the given hand landmark results **/
-class GestureExtractor() {
-	private val controlApiService: DefaultApi = DefaultApi(GestureExtractorConstants.serverIp)
+class GestureExtractor {
+	private val controlApiService: ControlApi = ControlApi(GestureExtractorConstants.serverIp)
 	private val ioScope = CoroutineScope(Dispatchers.IO + Job() )
 
 	private var previousSliderResults: Queue<Int> = LinkedList()
@@ -52,7 +52,6 @@ class GestureExtractor() {
 	private val activeControlsRange = 0..4
 
 	val isServerStarted: MutableState<Boolean> = mutableStateOf(false)
-
 
 	val sliderValue: MutableState<Int> = mutableStateOf(0)
 	var sliderValueToSend = 0
@@ -78,11 +77,11 @@ class GestureExtractor() {
 		try {
 			ioScope.launch {
 				while (isActive) {
-					controlApiService.controlPost(
+					controlApiService.addControls(
 						ControlData(
 							switch = switchValueToSend,
-							slider = sliderValueToSend.toBigDecimal(),
-							rotaryKnob = (rotaryKnobValueToSend * 180 / PI).toBigDecimal(MathContext(1)),
+							slider = sliderValueToSend,
+							rotaryknob = ((rotaryKnobValueToSend * 180 / PI).toFloat()),
 							select = selectValueToSend,
 						)
 					)
@@ -95,6 +94,11 @@ class GestureExtractor() {
 		}
 	}
 
+	val nurse: Boolean = LoginService.user.roles.find { it == "nurse" } != null
+	val headNurse: Boolean = LoginService.user.roles.find { it == "head_nurse" } != null
+	val doctor: Boolean = LoginService.user.roles.find { it == "doctor" } != null
+	val admin: Boolean = LoginService.user.userName == "xlipton"
+
 	// Calls that one control function which is selected to be the active control
 	fun theExtractor(handsResult: HandsResult){
 		val numHands = handsResult.multiHandLandmarks().size
@@ -103,7 +107,7 @@ class GestureExtractor() {
 			val handLandmarkList = handsResult.multiHandLandmarks()[i].landmarkList
 			when(activeControl.value) {
 				0 -> calculatePush(handLandmarkList = handLandmarkList)
-				2 -> calculateSliderValue(handLandmarkList = handLandmarkList)
+				2 -> if (doctor || admin) calculateSliderValue(handLandmarkList = handLandmarkList)
 				3 -> calculateRotaryKnobValue(handLandmarkList = handLandmarkList)
 				4 -> calculateSelect(handLandmarkList = handLandmarkList)
 			}
@@ -190,7 +194,7 @@ class GestureExtractor() {
 				fixedSliderValue.value = currentDistance
 				sliderValueToSend = currentDistance
 				previousSliderResults.clear()
-				Log.i(TAG, "sliderValueSet= $currentDistance")
+				//Log.i(TAG, "sliderValueSet= $currentDistance")
 			}
 		}
 		sliderValue.value = distance
@@ -214,7 +218,7 @@ class GestureExtractor() {
 				input = false
 				startingVectorX = 0f
 				startingVectorY = 0f
-				Log.i(TAG, "StartingVector CLEARED")
+				//Log.i(TAG, "StartingVector CLEARED")
 			}
 		}
 
@@ -232,9 +236,11 @@ class GestureExtractor() {
 			val angle = Utils.calculateVectorsAngle(startingVectorX, startingVectorY, derivedVectorX, derivedVectorY) + previousAngle
 			rotaryKnobValue.value = angle
 			rotaryKnobValueToSend = angle
+			/*
 			Log.i(TAG, "StartingVector: ($startingVectorX, $$startingVectorY) | derivedVector: ($derivedVectorX, " +
 					"$derivedVectorY) | Rotation " +
 					"angle: $angle")
+			 */
 		}
 	}
 
@@ -261,46 +267,61 @@ class GestureExtractor() {
 			let breaker@{
 				swipeValues.forEach outer@{ currentSwipeValue ->
 					previousSwipeResults.peek().forEach { previousSwipeValue ->
-						if (currentSwipeValue.y - GestureExtractorConstants.verticalSwipeLowerBound > previousSwipeValue.y &&
-							currentSwipeValue.y - GestureExtractorConstants.verticalSwipeUpperBound < previousSwipeValue.y) {
-							Log.i("swipe", "DOWN")
-							if (activeControl.value != activeControlsRange.last) {
-								activeControl.value++
-							}
-							previousSwipeResults.clear()
-							return@breaker
+						if (calculateVerticalSwipe(currentSwipeValue, previousSwipeValue)) return@breaker
 
-						} else if (currentSwipeValue.y + GestureExtractorConstants.verticalSwipeLowerBound  < previousSwipeValue.y &&
-							currentSwipeValue.y + GestureExtractorConstants.verticalSwipeUpperBound  > previousSwipeValue.y) {
-							Log.i("swipe", "UP")
-							if (activeControl.value != activeControlsRange.first) {
-								activeControl.value--
-							}
-							previousSwipeResults.clear()
-							return@breaker
-						}
-						if (activeControl.value == 1) {
-							if(currentSwipeValue.x - GestureExtractorConstants.horizontalSwipeLowerBound > previousSwipeValue.x &&
-								currentSwipeValue.x - GestureExtractorConstants.horizontalSwipeUpperBound < previousSwipeValue.x) {
-								Log.i("swipe", "RIGHT")
-								switchValue.value = true
-								switchValueToSend = true
-								previousSwipeResults.clear()
-								return@breaker
-
-							} else if (currentSwipeValue.x + GestureExtractorConstants.horizontalSwipeLowerBound < previousSwipeValue.x &&
-								currentSwipeValue.x + GestureExtractorConstants.horizontalSwipeUpperBound > previousSwipeValue.x) {
-								Log.i("swipe", "LEFT")
-								switchValue.value = false
-								switchValueToSend = false
-								previousSwipeResults.clear()
-								return@breaker
-							}
+						if (activeControl.value == 1 && (headNurse || admin)) {
+							if (calculateHorizontalSwipe(currentSwipeValue, previousSwipeValue)) return@breaker
 						}
 					}
 				}
 			}
 		}
+	}
+
+	private fun calculateHorizontalSwipe(currentSwipeValue: LandmarkProto.NormalizedLandmark,
+									   previousSwipeValue: LandmarkProto.NormalizedLandmark) : Boolean {
+		if(currentSwipeValue.x - GestureExtractorConstants.horizontalSwipeLowerBound > previousSwipeValue.x &&
+			currentSwipeValue.x - GestureExtractorConstants.horizontalSwipeUpperBound < previousSwipeValue.x) {
+			Log.i("swipe", "RIGHT")
+			switchValue.value = true
+			switchValueToSend = true
+			previousSwipeResults.clear()
+			return true
+
+		} else if (currentSwipeValue.x + GestureExtractorConstants.horizontalSwipeLowerBound < previousSwipeValue.x &&
+			currentSwipeValue.x + GestureExtractorConstants.horizontalSwipeUpperBound > previousSwipeValue.x) {
+			Log.i("swipe", "LEFT")
+			switchValue.value = false
+			switchValueToSend = false
+			previousSwipeResults.clear()
+			return true
+		}
+
+		return false
+	}
+
+	private fun calculateVerticalSwipe(currentSwipeValue: LandmarkProto.NormalizedLandmark,
+									   previousSwipeValue: LandmarkProto.NormalizedLandmark) : Boolean{
+		if (currentSwipeValue.y - GestureExtractorConstants.verticalSwipeLowerBound > previousSwipeValue.y &&
+			currentSwipeValue.y - GestureExtractorConstants.verticalSwipeUpperBound < previousSwipeValue.y) {
+			Log.i("swipe", "DOWN")
+			if (activeControl.value != activeControlsRange.last) {
+				activeControl.value++
+			}
+			previousSwipeResults.clear()
+			return true
+
+		} else if (currentSwipeValue.y + GestureExtractorConstants.verticalSwipeLowerBound  < previousSwipeValue.y &&
+			currentSwipeValue.y + GestureExtractorConstants.verticalSwipeUpperBound  > previousSwipeValue.y) {
+			Log.i("swipe", "UP")
+			if (activeControl.value != activeControlsRange.first) {
+				activeControl.value--
+			}
+			previousSwipeResults.clear()
+			return true
+		}
+
+		return false
 	}
 
 	private fun calculateSelect(handLandmarkList: MutableList<LandmarkProto.NormalizedLandmark>) {
@@ -366,7 +387,7 @@ class GestureExtractor() {
 
 					previousSelectResults.clear()
 
-					Log.i("select", "currentSelectValue= $currentSelectValue")
+					//Log.i("select", "currentSelectValue= $currentSelectValue")
 				}
 			}
 		}

@@ -1,12 +1,17 @@
 openapi: '3.0.2'
 info:
-  title: control
-  version: '1.0'
+  title: GController controls
+  version: '1.1'
 servers:
-  - url: http://localhost:8080
+  - url: http://192.168.10.106:8000
+  - url: http://localhost:8000
 paths:
   /control:
     get:
+      summary: Return all control value
+      operationId: returnControls
+      tags:
+        - control
       responses:
         200:
           description: The current state of the stored values.
@@ -20,6 +25,10 @@ paths:
           description: Internal server error.
 
     post:
+      summary: Add control values
+      operationId: addControls
+      tags:
+        - control
       description: This operation allows for sending control data.
       requestBody:
         required: true
@@ -41,7 +50,7 @@ components:
       type: object
       description: The control data containing the necessary control information and data
       properties:
-        timeStamp:
+        timestamp:
           type: string
           format: date-time
           description: The time the control was sent in UTC (zulu) time
@@ -50,20 +59,31 @@ components:
           type: boolean
           description: Shows if the switch control is turned on or off.
         slider:
-          type: number
+          type: integer
+          format: int32
           description: The number set by the slider control.
           example: 24
-        rotaryKnob:
+        rotaryknob:
           type: number
+          format: float
           description: The number set by the rotary knob control.
-          example: 60
+          example: 62
         select:
           type: array
           minItems: 4
           maxItems: 4
           items: 
             type: boolean
-            description: An array where the selected items are ture and the non selected ones are false.
+          description: An array where the selected items are ture and the non selected ones are false.
+  securitySchemes:
+    g-security:
+      openIdConnectUrl: "http://192.168.10.106:8080/auth/realms/grealm/.well-known/openid-configuration"
+      type: openIdConnect
+      description: Security
+security:
+    - 
+        g-security: []
+
 
 
 

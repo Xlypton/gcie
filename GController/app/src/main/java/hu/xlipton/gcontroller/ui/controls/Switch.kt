@@ -14,15 +14,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SwitchControl(onCheckedChange: () -> Unit, checked: Boolean, color: Color) {
+fun SwitchControl(onCheckedChange: () -> Unit, checked: Boolean, color: Color, isControlEnabled: Boolean) {
 	Surface(color = color, modifier = Modifier.fillMaxWidth().height(140.dp), shape = RoundedCornerShape(16.dp)) {
 		Switch(
 			checked = checked,
 			onCheckedChange = { onCheckedChange },
-			modifier = Modifier.then(
-				Modifier
-					.size(100.dp)
-					.then(Modifier.scale(2.5f))
-			))
+			modifier = Modifier.size(100.dp).scale(2.5f),
+			enabled = isControlEnabled,
+		)
 	}
 }

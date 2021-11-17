@@ -1,14 +1,11 @@
 package hu.xlipton.gcontroller.ui.controller
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import hu.xlipton.gcontroller.gestures.GestureExtractor
+import hu.xlipton.gcontroller.security.LoginService
 import java.util.*
 
-class ControllerViewModel : ViewModel() {
+class ControllerViewModel() : ViewModel() {
 	val gestureExtractor: GestureExtractor =
 		GestureExtractor()
 
@@ -20,7 +17,7 @@ class ControllerViewModel : ViewModel() {
 
     val rotaryKnobValue = gestureExtractor.rotaryKnobValue
 
-	val switchState = gestureExtractor.switchValue
+	val switchValue = gestureExtractor.switchValue
 
 	val selectValue = gestureExtractor.selectValue
 
@@ -28,9 +25,9 @@ class ControllerViewModel : ViewModel() {
 
 	val error = gestureExtractor.error
 
-	fun onSliderValueChange(newSliderValue: Int) {
-	}
+	val isSliderEnabled = gestureExtractor.doctor || gestureExtractor.admin
 
-	fun onSwitchChange() {
-	}
+	val user = LoginService.user
+
+	val isSwitchEnabled = gestureExtractor.headNurse || gestureExtractor.admin
 }
