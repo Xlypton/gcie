@@ -4,9 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
-import com.google.mediapipe.formats.proto.LandmarkProto;
 import com.google.mediapipe.solutioncore.CameraInput;
-import com.google.mediapipe.solutions.hands.HandLandmark;
 import com.google.mediapipe.solutions.hands.Hands;
 import com.google.mediapipe.solutions.hands.HandsOptions;
 import com.google.mediapipe.solutions.hands.HandsResult;
@@ -80,25 +78,5 @@ public class MediaPipeHands {
 				CameraInput.CameraFacing.FRONT,
 				glSurfaceView.getWidth(),
 				glSurfaceView.getHeight());
-	}
-
-	private void logWristLandmark(HandsResult result, boolean showPixelValues) {
-		LandmarkProto.NormalizedLandmark wristLandmark = Hands.getHandLandmark(result, 0, HandLandmark.WRIST);
-		// For Bitmaps, show the pixel values. For texture inputs, show the normalized coordinates.
-		if (showPixelValues) {
-			int width = result.inputBitmap().getWidth();
-			int height = result.inputBitmap().getHeight();
-			Log.i(
-					TAG,
-					String.format(
-							"MediaPipe Hand wrist coordinates (pixel values): x=%f, y=%f",
-							wristLandmark.getX() * width, wristLandmark.getY() * height));
-		} else {
-			Log.i(
-					TAG,
-					String.format(
-							"MediaPipe Hand wrist normalized coordinates (value range: [0, 1]): x=%f, y=%f",
-							wristLandmark.getX(), wristLandmark.getY()));
-		}
 	}
 }

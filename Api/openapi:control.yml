@@ -15,7 +15,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ControlData'
         400:
-          description: Invalid imput.
+          description: Invalid input.
         500:
           description: Internal server error.
 
@@ -39,7 +39,7 @@ components:
     ControlData:
       title: ControlData
       type: object
-      description: The control data containing the necessary control informations and data
+      description: The control data containing the necessary control information and data
       properties:
         timeStamp:
           type: string
